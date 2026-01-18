@@ -11,7 +11,7 @@ import (
 func TestClient_GetRecentIOCs(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintln(w, `{
+		_, _ = fmt.Fprintln(w, `{
 			"query_status": "ok",
 			"data": [
 				{
@@ -43,7 +43,7 @@ func TestClient_GetRecentIOCs(t *testing.T) {
 func TestClient_QueryIOC(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintln(w, `{
+		_, _ = fmt.Fprintln(w, `{
 			"query_status": "ok",
 			"data": [
 				{
@@ -70,7 +70,7 @@ func TestClient_QueryIOC(t *testing.T) {
 func TestClient_SearchIOC(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintln(w, `{
+		_, _ = fmt.Fprintln(w, `{
 			"query_status": "ok",
 			"data": [
 				{

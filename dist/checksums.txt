@@ -1,6 +1,0 @@
-bba62a672a9dbefff5600b018f2e06d266b960957d9a20341d28876d2eeb44d8  tfox_0.0.0-SNAPSHOT-none_darwin_amd64.tar.gz
-30edf43e1b4af87129e615811b48693f38299c78bd948a63fbfb6cc344a17840  tfox_0.0.0-SNAPSHOT-none_darwin_arm64.tar.gz
-c49957da91fa3ce41e821a34ee998fe560043225f4b11e562202c4de823d0ed7  tfox_0.0.0-SNAPSHOT-none_linux_amd64.tar.gz
-3e3d130c4ede07eedd7a9a02ffa111faccada870db82334c42dadae9eaf4afc1  tfox_0.0.0-SNAPSHOT-none_linux_arm64.tar.gz
-1f46f7cbf99c341f680fdc86e806d688f2e1f97bd2ca566aa841269c6a7f21ee  tfox_0.0.0-SNAPSHOT-none_windows_amd64.zip
-1f7c8d1ed5dfe822960fcf7dd999401e0a7596fcf77c918a8032ceecc639163f  tfox_0.0.0-SNAPSHOT-none_windows_arm64.zip
