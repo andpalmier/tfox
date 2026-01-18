@@ -1,0 +1,114 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+version: 2
+
+project_name: tfox
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: tfox
+    main: .
+    binary: tfox
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.ShortCommit}}
+      - -X main.date={{.Date}}
+
+archives:
+  - id: default
+    formats:
+      - tar.gz
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - LICENSE
+      - README.md
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "Merge pull request"
+
+homebrew_casks:
+  - name: tfox
+    repository:
+      owner: andpalmier
+      name: homebrew-tap
+    homepage: "https://github.com/andpalmier/tfox"
+    description: "CLI tool to search in ThreatFox IOC database"
+    directory: Casks
+    url:
+      verified: github.com/andpalmier/tfox
+    binaries:
+      - tfox
+    hooks:
+      post:
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/tfox"]
+          end
+
+dockers:
+  - image_templates:
+      - "ghcr.io/andpalmier/tfox:{{ .Version }}-amd64"
+      - "ghcr.io/andpalmier/tfox:latest-amd64"
+    use: buildx
+    goos: linux
+    goarch: amd64
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--platform=linux/amd64"
+    ids:
+      - tfox
+    extra_files: []
+  - image_templates:
+      - "ghcr.io/andpalmier/tfox:{{ .Version }}-arm64"
+      - "ghcr.io/andpalmier/tfox:latest-arm64"
+    use: buildx
+    goos: linux
+    goarch: arm64
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--platform=linux/arm64"
+    ids:
+      - tfox
+    extra_files: []
+
+docker_manifests:
+  - name_template: "ghcr.io/andpalmier/tfox:{{ .Version }}"
+    image_templates:
+      - "ghcr.io/andpalmier/tfox:{{ .Version }}-amd64"
+      - "ghcr.io/andpalmier/tfox:{{ .Version }}-arm64"
+  - name_template: "ghcr.io/andpalmier/tfox:latest"
+    image_templates:
+      - "ghcr.io/andpalmier/tfox:latest-amd64"
+      - "ghcr.io/andpalmier/tfox:latest-arm64"
+
+release:
+  github:
+    owner: andpalmier
+    name: tfox
+  draft: false
+  prerelease: auto

@@ -1,0 +1,7 @@
+tfox
+.idea/
+.DS_Store
+.env
+coverage.out
+coverage.html
+tfox.html
