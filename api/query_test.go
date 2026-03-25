@@ -67,9 +67,6 @@ func TestClient_QueryIOC(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GetIOCByID() error = %v", err)
 	}
-	if ioc == nil {
-		t.Errorf("Expected result")
-	}
 	if ioc.ID != "123" {
 		t.Errorf("Expected ID 123, got %s", ioc.ID)
 	}
