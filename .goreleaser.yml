@@ -51,24 +51,22 @@ changelog:
       - "^chore:"
       - "Merge pull request"
 
-homebrew_casks:
+homebrew:
   - name: tfox
-    repository:
+    tap:
       owner: andpalmier
       name: homebrew-tap
     homepage: "https://github.com/andpalmier/tfox"
     description: "CLI tool to search in ThreatFox IOC database"
-    directory: Casks
     url:
       verified: github.com/andpalmier/tfox
-    binaries:
-      - tfox
-    hooks:
-      post:
-        install: |
-          if OS.mac?
-            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/tfox"]
-          end
+    download_strategy: CurlDownloadStrategy
+    install: |
+      bin.install "tfox"
+    post_install: |
+      if OS.mac?
+        system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{bin}/tfox"]
+      end
 
 dockers:
   - image_templates:
