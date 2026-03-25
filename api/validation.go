@@ -103,11 +103,3 @@ func ValidateLimit(limit int) error {
 	}
 	return nil
 }
-
-// ValidateConfidenceLevel checks confidence level (0-100)
-func ValidateConfidenceLevel(level int) error {
-	if level < 0 || level > 100 {
-		return fmt.Errorf("confidence level must be between 0 and 100")
-	}
-	return nil
-}

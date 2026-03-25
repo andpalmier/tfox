@@ -44,26 +44,34 @@ func TestClient_QueryIOC(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = fmt.Fprintln(w, `{
-			"query_status": "ok",
-			"data": [
-				{
-					"id": "123",
-					"ioc": "1.2.3.4"
-				}
-			]
-		}`)
+	"id": "123",
+	"ioc": "1.2.3.4",
+	"threat_type": "botnet_cc",
+	"threat_type_desc": "test",
+	"ioc_type": "ip:port",
+	"ioc_type_desc": "test",
+	"malware": "Emotet",
+	"malware_printable": "Emotet",
+	"malware_malpedia": "https://example.com",
+	"confidence_level": 75,
+	"first_seen": "2024-01-01 00:00:00 UTC",
+	"reporter": "test"
+}`)
 	}))
 	defer server.Close()
 
 	c := NewClient("test-key")
 	c.baseURL = server.URL + "/"
 
-	iocs, err := c.GetIOCByID(context.Background(), 123)
+	ioc, err := c.GetIOCByID(context.Background(), 123)
 	if err != nil {
 		t.Fatalf("GetIOCByID() error = %v", err)
 	}
-	if iocs == nil {
+	if ioc == nil {
 		t.Errorf("Expected result")
+	}
+	if ioc.ID != "123" {
+		t.Errorf("Expected ID 123, got %s", ioc.ID)
 	}
 }
 

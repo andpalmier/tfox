@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sync"
 	"time"
 )
 
@@ -24,6 +25,7 @@ type Client struct {
 	httpClient *http.Client
 	interval   time.Duration
 	lastReq    time.Time
+	mu         sync.Mutex // Protects lastReq for thread-safe rate limiting
 }
 
 // Option configures the Client
@@ -62,8 +64,10 @@ func NewClient(apiKey string, options ...Option) *Client {
 	return c
 }
 
-// wait handles simple rate limiting
+// wait handles simple rate limiting (thread-safe)
 func (c *Client) wait() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	elapsed := time.Since(c.lastReq)
 	if elapsed < c.interval {
 		time.Sleep(c.interval - elapsed)
@@ -88,7 +92,7 @@ func (c *Client) MakeRequest(ctx context.Context, payload interface{}) (string, 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", "tfox-client/1.0")
 	if c.apiKey != "" {
-		req.Header.Set("Auth-Key", c.apiKey)
+		req.Header.Set("API-Key", c.apiKey)
 	}
 
 	resp, err := c.httpClient.Do(req)

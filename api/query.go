@@ -58,8 +58,12 @@ func (c *Client) GetIOCByID(ctx context.Context, id int) (*SingleIOCResponse, er
 		return nil, fmt.Errorf("error parsing response: %w", err)
 	}
 
-	if resp.QueryStatus != "ok" {
+	if resp.QueryStatus != "" && resp.QueryStatus != "ok" {
 		return nil, fmt.Errorf("API returned status: %s", resp.QueryStatus)
+	}
+
+	if resp.ID == "" {
+		return nil, fmt.Errorf("IOC not found")
 	}
 
 	return resp, nil

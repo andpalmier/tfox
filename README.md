@@ -91,9 +91,6 @@ tfox recent -days 7
 ### Query by Criteria
 
 ```bash
-# By IOC ID
-tfox query -id 41
-
 # By tag
 tfox query -tag Emotet -limit 10
 
@@ -107,14 +104,14 @@ tfox query -label warzone -platform win
 ### Search IOCs
 
 ```bash
-# Search by IOC value
-tfox search -ioc 94.103.84.81
+# Search by IOC value (wildcard)
+tfox search -ioc suspicious.com
 
 # Exact match
 tfox search -ioc evil.com -exact
 
 # Search by file hash
-tfox search -hash 2151c4b970eff0071948dbbc19066aa4
+tfox search -hash <md5_or_sha256_hash>
 ```
 
 ### List Data
