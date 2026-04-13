@@ -92,7 +92,7 @@ func (c *Client) MakeRequest(ctx context.Context, payload interface{}) (string, 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", "tfox-client/1.0")
 	if c.apiKey != "" {
-		req.Header.Set("API-Key", c.apiKey)
+		req.Header.Set("Auth-Key", c.apiKey)
 	}
 
 	resp, err := c.httpClient.Do(req)

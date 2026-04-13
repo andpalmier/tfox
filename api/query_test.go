@@ -10,6 +10,12 @@ import (
 
 func TestClient_GetRecentIOCs(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Verify Auth-Key header is sent
+		authKey := r.Header.Get("Auth-Key")
+		if authKey != "test-key" {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = fmt.Fprintln(w, `{
 			"query_status": "ok",
@@ -42,6 +48,12 @@ func TestClient_GetRecentIOCs(t *testing.T) {
 
 func TestClient_QueryIOC(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Verify Auth-Key header is sent
+		authKey := r.Header.Get("Auth-Key")
+		if authKey != "test-key" {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = fmt.Fprintln(w, `{
 	"id": "123",
@@ -74,6 +86,12 @@ func TestClient_QueryIOC(t *testing.T) {
 
 func TestClient_SearchIOC(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Verify Auth-Key header is sent
+		authKey := r.Header.Get("Auth-Key")
+		if authKey != "test-key" {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = fmt.Fprintln(w, `{
 			"query_status": "ok",
