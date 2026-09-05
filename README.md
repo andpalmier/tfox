@@ -23,8 +23,10 @@ A command-line tool for interacting with the [ThreatFox API](https://threatfox.a
 ### Using Homebrew
 
 ```bash
-brew install andpalmier/tap/tfox
+brew install --cask andpalmier/tap/tfox
 ```
+
+Homebrew casks are macOS only. On Linux, use `go install` or a pre-built binary.
 
 ### Using Go
 
