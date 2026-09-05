@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -81,7 +82,7 @@ func TestCheckStatusPrefersAPIExplanation(t *testing.T) {
 	}
 
 	var se *StatusError
-	if !errorsAs(err, &se) || se.Status != "illegal_search_term" {
+	if !errors.As(err, &se) || se.Status != "illegal_search_term" {
 		t.Errorf("raw status should stay available for matching, got %+v", err)
 	}
 }
@@ -100,12 +101,4 @@ func TestCheckStatusAllowsBareObject(t *testing.T) {
 	if err := CheckStatus([]byte(`{"id":"1901292","ioc":"evil.example"}`), "ioc"); err != nil {
 		t.Errorf("bare object should be accepted, got %v", err)
 	}
-}
-
-func errorsAs(err error, target **StatusError) bool {
-	se, ok := err.(*StatusError)
-	if ok {
-		*target = se
-	}
-	return ok
 }
