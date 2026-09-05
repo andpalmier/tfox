@@ -12,7 +12,12 @@ import (
 )
 
 // Global flags
-var verbose bool
+var (
+	verbose bool
+	// requestTimeout bounds a single API request. The default suits most
+	// queries; large result sets need longer.
+	requestTimeout = 30 * time.Second
+)
 
 // printRootHelp displays the help message for the root command
 func printRootHelp() {
@@ -27,11 +32,13 @@ func printRootHelp() {
 	fmt.Println("  recent             Query recent IOCs from ThreatFox")
 	fmt.Println("  query              Query ThreatFox by IOC ID, tag, or malware family")
 	fmt.Println("  search             Search for IOCs by term or file hash")
+	fmt.Println("  submit             Share indicators of compromise with ThreatFox")
 	fmt.Println("  list               List malware families, types, or tags")
 	fmt.Println("  version            Show version information")
 	fmt.Println()
 	fmt.Println("Global Flags:")
 	fmt.Println("  -v, --verbose      Enable verbose output")
+	fmt.Println("  -t, --timeout      Per-request timeout (default 30s, e.g. 2m)")
 	fmt.Println("  -V, --version      Show version information")
 	fmt.Println("  -h, --help         Show this help message")
 	fmt.Println()
@@ -74,24 +81,27 @@ func getAPIClient() (*api.Client, error) {
 		printVerbose("Creating API client")
 	}
 
-	return api.NewClient(apiKey), nil
+	return api.NewClient(apiKey, api.WithTimeout(requestTimeout)), nil
 }
 
 // getContext returns a context with timeout and its cancel function
 func getContext() (context.Context, context.CancelFunc) {
-	timeout := 30 * time.Second
-
 	if verbose {
-		printVerbose(fmt.Sprintf("Setting request timeout to %v", timeout))
+		printVerbose(fmt.Sprintf("Setting request timeout to %v", requestTimeout))
 	}
 
-	return context.WithTimeout(context.Background(), timeout)
+	return context.WithTimeout(context.Background(), requestTimeout)
 }
 
 // printUsageHeader prints a standard usage header for commands
 func printUsageHeader(command, description string) {
 	fmt.Printf("Usage:\n  tfox %s [flags]\n", command)
 	fmt.Println(description)
+}
+
+// printWarning prints a non-fatal warning
+func printWarning(message string) {
+	fmt.Fprintf(os.Stderr, "Warning: %s\n", message)
 }
 
 // printError prints an error message
@@ -107,17 +117,9 @@ func printDetailedError(err error, context string) {
 	}
 
 	errStr := err.Error()
-	suggestions := map[string]string{
-		"Unauthorized":       "Set ABUSECH_API_KEY environment variable\n          export ABUSECH_API_KEY=your_key_here",
-		"API key":            "Set ABUSECH_API_KEY environment variable\n          export ABUSECH_API_KEY=your_key_here",
-		"timeout":            "The request timed out. Try again or check your network connection",
-		"deadline exceeded":  "The request timed out. Try again or check your network connection",
-		"connection refused": "Cannot reach API. Check your internet connection",
-	}
-
-	for keyword, solution := range suggestions {
-		if contains(errStr, keyword) {
-			fmt.Fprintf(os.Stderr, "Solution: %s\n", solution)
+	for _, s := range errorSuggestions {
+		if strings.Contains(errStr, s.keyword) {
+			fmt.Fprintf(os.Stderr, "Solution: %s\n", s.solution)
 			break
 		}
 	}
@@ -125,6 +127,20 @@ func printDetailedError(err error, context string) {
 	if verbose {
 		fmt.Fprintf(os.Stderr, "Full error: %+v\n", err)
 	}
+}
+
+// errorSuggestions maps a substring of an error to a suggested fix.
+// Ordered, so that when several keywords match the hint shown is the same
+// every run.
+var errorSuggestions = []struct {
+	keyword  string
+	solution string
+}{
+	{"Unauthorized", "Set ABUSECH_API_KEY environment variable\n          export ABUSECH_API_KEY=your_key_here"},
+	{"API key", "Set ABUSECH_API_KEY environment variable\n          export ABUSECH_API_KEY=your_key_here"},
+	{"timeout", "The request timed out. Try again or check your network connection"},
+	{"deadline exceeded", "The request timed out. Try again or check your network connection"},
+	{"connection refused", "Cannot reach API. Check your internet connection"},
 }
 
 // printVerbose prints a verbose message
@@ -142,9 +158,14 @@ func printJSON(data interface{}) {
 	fmt.Println(string(b))
 }
 
-// contains checks if a string contains a substring
-func contains(s, substr string) bool {
-	return strings.Contains(s, substr)
+// SetTimeout sets the per-request timeout
+func SetTimeout(d time.Duration) {
+	requestTimeout = d
+}
+
+// Timeout returns the per-request timeout
+func Timeout() time.Duration {
+	return requestTimeout
 }
 
 // SetVerbose sets the verbose flag

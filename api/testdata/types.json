@@ -1,0 +1,15 @@
+{
+  "data": {
+    "1": {
+      "description": "URL that delivers a malware payload",
+      "fk_threat_type": "payload_delivery",
+      "ioc_type": "url"
+    },
+    "2": {
+      "description": "Domain name that delivers a malware payload",
+      "fk_threat_type": "payload_delivery",
+      "ioc_type": "domain"
+    }
+  },
+  "query_status": "ok"
+}

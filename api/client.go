@@ -105,13 +105,13 @@ func (c *Client) MakeRequest(ctx context.Context, payload interface{}) (string, 
 		return "", fmt.Errorf("API returned status %s", resp.Status)
 	}
 
-	limitedReader := io.LimitReader(resp.Body, maxResponseSize)
+	limitedReader := io.LimitReader(resp.Body, maxResponseSize+1)
 	body, err := io.ReadAll(limitedReader)
 	if err != nil {
 		return "", fmt.Errorf("reading response: %w", err)
 	}
 
-	if len(body) == maxResponseSize {
+	if len(body) > maxResponseSize {
 		return "", fmt.Errorf("response too large: exceeded %d bytes", maxResponseSize)
 	}
 

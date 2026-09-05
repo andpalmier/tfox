@@ -1,0 +1,32 @@
+{
+  "comment": null,
+  "confidence_level": 100,
+  "credits": [
+    {
+      "credits_amount": "10",
+      "credits_from": null
+    }
+  ],
+  "first_seen": "2026-09-05 10:17:05 UTC",
+  "id": "1901292",
+  "ioc": "0vrtpzj3.us-en-us-darkreset.com",
+  "ioc_type": "domain",
+  "ioc_type_desc": "Domain name that delivers a malware payload",
+  "is_compromised": false,
+  "last_seen": null,
+  "malware": "js.clearfake",
+  "malware_alias": null,
+  "malware_malpedia": "https://malpedia.caad.fkie.fraunhofer.de/details/js.clearfake",
+  "malware_printable": "ClearFake",
+  "malware_samples": [],
+  "reference": null,
+  "reporter": "anonymous",
+  "sightings": 1,
+  "tags": [
+    "ClearFake",
+    "mac-0x68dc",
+    "macOS"
+  ],
+  "threat_type": "payload_delivery",
+  "threat_type_desc": "Indicator that identifies a malware distribution server (payload delivery)"
+}

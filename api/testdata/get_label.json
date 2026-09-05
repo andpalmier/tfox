@@ -1,0 +1,10 @@
+{
+  "data": [
+    {
+      "malware": "win.ave_maria",
+      "malware_alias": "AVE_MARIA,AveMariaRAT,Warzone RAT,WarzoneRAT,avemaria",
+      "malware_printable": "Ave Maria"
+    }
+  ],
+  "query_status": "ok"
+}

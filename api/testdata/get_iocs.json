@@ -1,0 +1,49 @@
+{
+  "data": [
+    {
+      "confidence_level": 100,
+      "first_seen": "2026-09-05 10:17:05 UTC",
+      "id": "1901292",
+      "ioc": "0vrtpzj3.us-en-us-darkreset.com",
+      "ioc_type": "domain",
+      "ioc_type_desc": "Domain name that delivers a malware payload",
+      "is_compromised": false,
+      "last_seen": null,
+      "malware": "js.clearfake",
+      "malware_alias": null,
+      "malware_malpedia": "https://malpedia.caad.fkie.fraunhofer.de/details/js.clearfake",
+      "malware_printable": "ClearFake",
+      "reference": null,
+      "reporter": "anonymous",
+      "tags": [
+        "ClearFake",
+        "mac-0x68dc",
+        "macOS"
+      ],
+      "threat_type": "payload_delivery",
+      "threat_type_desc": "Indicator that identifies a malware distribution server (payload delivery)"
+    },
+    {
+      "confidence_level": 100,
+      "first_seen": "2026-09-05 10:05:06 UTC",
+      "id": "1901290",
+      "ioc": "154.91.59.108:8084",
+      "ioc_type": "ip:port",
+      "ioc_type_desc": "ip:port combination that is used for botnet Command&control (C&C)",
+      "is_compromised": true,
+      "last_seen": null,
+      "malware": "win.vshell",
+      "malware_alias": null,
+      "malware_malpedia": "https://malpedia.caad.fkie.fraunhofer.de/details/win.vshell",
+      "malware_printable": "VShell",
+      "reference": null,
+      "reporter": "anonymous",
+      "tags": [
+        "Vshell"
+      ],
+      "threat_type": "botnet_cc",
+      "threat_type_desc": "Indicator that identifies a botnet command&control server (C&C)"
+    }
+  ],
+  "query_status": "ok"
+}

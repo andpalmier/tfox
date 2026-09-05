@@ -25,13 +25,13 @@ func (c *Client) GetRecentIOCs(ctx context.Context, days int) ([]IOC, error) {
 		return nil, fmt.Errorf("error retrieving recent IOCs: %w", err)
 	}
 
+	if err := CheckStatus([]byte(response), "get_iocs"); err != nil {
+		return nil, err
+	}
+
 	resp, err := ParseIOCResponse([]byte(response))
 	if err != nil {
 		return nil, fmt.Errorf("error parsing response: %w", err)
-	}
-
-	if resp.QueryStatus != "ok" {
-		return nil, fmt.Errorf("API returned status: %s", resp.QueryStatus)
 	}
 
 	return resp.Data, nil
@@ -53,13 +53,13 @@ func (c *Client) GetIOCByID(ctx context.Context, id int) (*SingleIOCResponse, er
 		return nil, fmt.Errorf("error retrieving IOC: %w", err)
 	}
 
+	if err := CheckStatus([]byte(response), "ioc"); err != nil {
+		return nil, err
+	}
+
 	resp, err := ParseSingleIOCResponse([]byte(response))
 	if err != nil {
 		return nil, fmt.Errorf("error parsing response: %w", err)
-	}
-
-	if resp.QueryStatus != "" && resp.QueryStatus != "ok" {
-		return nil, fmt.Errorf("API returned status: %s", resp.QueryStatus)
 	}
 
 	if resp.ID == "" {
@@ -89,13 +89,13 @@ func (c *Client) SearchIOC(ctx context.Context, searchTerm string, exactMatch bo
 		return nil, fmt.Errorf("error searching IOC: %w", err)
 	}
 
+	if err := CheckStatus([]byte(response), "search_ioc"); err != nil {
+		return nil, err
+	}
+
 	resp, err := ParseIOCResponse([]byte(response))
 	if err != nil {
 		return nil, fmt.Errorf("error parsing response: %w", err)
-	}
-
-	if resp.QueryStatus != "ok" {
-		return nil, fmt.Errorf("API returned status: %s", resp.QueryStatus)
 	}
 
 	return resp.Data, nil
@@ -117,13 +117,13 @@ func (c *Client) SearchByHash(ctx context.Context, hash string) ([]IOC, error) {
 		return nil, fmt.Errorf("error searching by hash: %w", err)
 	}
 
+	if err := CheckStatus([]byte(response), "search_hash"); err != nil {
+		return nil, err
+	}
+
 	resp, err := ParseIOCResponse([]byte(response))
 	if err != nil {
 		return nil, fmt.Errorf("error parsing response: %w", err)
-	}
-
-	if resp.QueryStatus != "ok" {
-		return nil, fmt.Errorf("API returned status: %s", resp.QueryStatus)
 	}
 
 	return resp.Data, nil
@@ -152,13 +152,13 @@ func (c *Client) QueryTag(ctx context.Context, tag string, limit int) ([]IOC, er
 		return nil, fmt.Errorf("error querying tag: %w", err)
 	}
 
+	if err := CheckStatus([]byte(response), "taginfo"); err != nil {
+		return nil, err
+	}
+
 	resp, err := ParseIOCResponse([]byte(response))
 	if err != nil {
 		return nil, fmt.Errorf("error parsing response: %w", err)
-	}
-
-	if resp.QueryStatus != "ok" {
-		return nil, fmt.Errorf("API returned status: %s", resp.QueryStatus)
 	}
 
 	return resp.Data, nil
@@ -187,13 +187,13 @@ func (c *Client) QueryMalware(ctx context.Context, malware string, limit int) ([
 		return nil, fmt.Errorf("error querying malware: %w", err)
 	}
 
+	if err := CheckStatus([]byte(response), "malwareinfo"); err != nil {
+		return nil, err
+	}
+
 	resp, err := ParseIOCResponse([]byte(response))
 	if err != nil {
 		return nil, fmt.Errorf("error parsing response: %w", err)
-	}
-
-	if resp.QueryStatus != "ok" {
-		return nil, fmt.Errorf("API returned status: %s", resp.QueryStatus)
 	}
 
 	return resp.Data, nil
@@ -210,13 +210,13 @@ func (c *Client) GetMalwareList(ctx context.Context) (map[string]MalwareDetails,
 		return nil, fmt.Errorf("error retrieving malware list: %w", err)
 	}
 
+	if err := CheckStatus([]byte(response), "malware_list"); err != nil {
+		return nil, err
+	}
+
 	resp, err := ParseMalwareListResponse([]byte(response))
 	if err != nil {
 		return nil, fmt.Errorf("error parsing response: %w", err)
-	}
-
-	if resp.QueryStatus != "ok" {
-		return nil, fmt.Errorf("API returned status: %s", resp.QueryStatus)
 	}
 
 	return resp.Data, nil
@@ -233,13 +233,13 @@ func (c *Client) GetTypes(ctx context.Context) (map[string]IOCType, error) {
 		return nil, fmt.Errorf("error retrieving types: %w", err)
 	}
 
+	if err := CheckStatus([]byte(response), "types"); err != nil {
+		return nil, err
+	}
+
 	resp, err := ParseTypesResponse([]byte(response))
 	if err != nil {
 		return nil, fmt.Errorf("error parsing response: %w", err)
-	}
-
-	if resp.QueryStatus != "ok" {
-		return nil, fmt.Errorf("API returned status: %s", resp.QueryStatus)
 	}
 
 	return resp.Data, nil
@@ -256,13 +256,13 @@ func (c *Client) GetTagList(ctx context.Context) (map[string]TagInfo, error) {
 		return nil, fmt.Errorf("error retrieving tag list: %w", err)
 	}
 
+	if err := CheckStatus([]byte(response), "tag_list"); err != nil {
+		return nil, err
+	}
+
 	resp, err := ParseTagListResponse([]byte(response))
 	if err != nil {
 		return nil, fmt.Errorf("error parsing response: %w", err)
-	}
-
-	if resp.QueryStatus != "ok" {
-		return nil, fmt.Errorf("API returned status: %s", resp.QueryStatus)
 	}
 
 	return resp.Data, nil
@@ -288,13 +288,13 @@ func (c *Client) GetLabel(ctx context.Context, malware string, platform string) 
 		return nil, fmt.Errorf("error getting label: %w", err)
 	}
 
+	if err := CheckStatus([]byte(response), "get_label"); err != nil {
+		return nil, err
+	}
+
 	resp, err := ParseLabelResponse([]byte(response))
 	if err != nil {
 		return nil, fmt.Errorf("error parsing response: %w", err)
-	}
-
-	if resp.QueryStatus != "ok" {
-		return nil, fmt.Errorf("API returned status: %s", resp.QueryStatus)
 	}
 
 	return resp.Data, nil

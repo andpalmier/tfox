@@ -7,13 +7,23 @@ import (
 
 // IOCResponse represents a standard ThreatFox API response with IOC data
 type IOCResponse struct {
-	QueryStatus string `json:"query_status"`
-	Data        []IOC  `json:"data,omitempty"`
+	QueryStatus string     `json:"query_status"`
+	QueryInfo   *QueryInfo `json:"query_info,omitempty"`
+	Data        []IOC      `json:"data,omitempty"`
+}
+
+// QueryInfo describes the search the API actually ran. result_count comes back
+// as a number and result_max as a string, so both are json.Number.
+type QueryInfo struct {
+	SearchScope string      `json:"search_scope,omitempty"`
+	ResultCount json.Number `json:"result_count,omitempty"`
+	ResultMax   json.Number `json:"result_max,omitempty"`
 }
 
 // SingleIOCResponse represents a response for a single IOC query
 type SingleIOCResponse struct {
-	QueryStatus     string          `json:"query_status"`
+	// The ioc query answers with a bare object and no query_status.
+	QueryStatus     string          `json:"query_status,omitempty"`
 	ID              string          `json:"id,omitempty"`
 	IOC             string          `json:"ioc,omitempty"`
 	ThreatType      string          `json:"threat_type,omitempty"`
@@ -29,6 +39,8 @@ type SingleIOCResponse struct {
 	LastSeen        *string         `json:"last_seen,omitempty"`
 	Reference       *string         `json:"reference,omitempty"`
 	Reporter        string          `json:"reporter,omitempty"`
+	IsCompromised   bool            `json:"is_compromised"`
+	Sightings       json.Number     `json:"sightings,omitempty"`
 	Comment         string          `json:"comment,omitempty"`
 	Tags            []string        `json:"tags,omitempty"`
 	Credits         []Credit        `json:"credits,omitempty"`
@@ -52,6 +64,7 @@ type IOC struct {
 	LastSeen        *string         `json:"last_seen"`
 	Reference       *string         `json:"reference"`
 	Reporter        string          `json:"reporter"`
+	IsCompromised   bool            `json:"is_compromised"`
 	Tags            []string        `json:"tags"`
 	MalwareSamples  []MalwareSample `json:"malware_samples,omitempty"`
 }
@@ -65,9 +78,10 @@ type MalwareSample struct {
 }
 
 // Credit represents credits for an IOC submission
+// CreditsAmount arrives quoted, so json.Number accepts both forms.
 type Credit struct {
-	CreditsFrom   string `json:"credits_from"`
-	CreditsAmount int    `json:"credits_amount"`
+	CreditsFrom   string      `json:"credits_from"`
+	CreditsAmount json.Number `json:"credits_amount"`
 }
 
 // MalwareListResponse represents the response from malware_list query
@@ -122,12 +136,11 @@ type LabelResult struct {
 }
 
 // SubmitResponse represents the response from submit_ioc query
+// The shape of data is not published, so it is kept raw and printed as the
+// API sent it rather than being squeezed into a guess.
 type SubmitResponse struct {
-	QueryStatus string `json:"query_status"`
-	Data        struct {
-		OK      int `json:"ok,omitempty"`
-		Ignored int `json:"ignored,omitempty"`
-	} `json:"data,omitempty"`
+	QueryStatus string          `json:"query_status"`
+	Data        json.RawMessage `json:"data,omitempty"`
 }
 
 // ParseIOCResponse parses the raw JSON response into an IOCResponse struct
@@ -140,6 +153,15 @@ func ParseIOCResponse(data []byte) (*IOCResponse, error) {
 
 	resp := &IOCResponse{
 		QueryStatus: fmt.Sprintf("%v", raw["query_status"]),
+	}
+
+	if qi, ok := raw["query_info"]; ok {
+		if qiJSON, err := json.Marshal(qi); err == nil {
+			var info QueryInfo
+			if json.Unmarshal(qiJSON, &info) == nil {
+				resp.QueryInfo = &info
+			}
+		}
 	}
 
 	// Check if 'data' is an array

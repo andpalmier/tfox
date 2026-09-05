@@ -1,0 +1,47 @@
+{
+  "data": [
+    {
+      "confidence_level": 100,
+      "first_seen": "2026-09-04 05:01:49 UTC",
+      "id": "1894170",
+      "ioc": "brightmorningday.top",
+      "ioc_type": "domain",
+      "ioc_type_desc": "Domain used for credit card skimming (usually related to Magecart attacks)",
+      "is_compromised": false,
+      "last_seen": null,
+      "malware": "js.magecart",
+      "malware_alias": null,
+      "malware_malpedia": "https://malpedia.caad.fkie.fraunhofer.de/details/js.magecart",
+      "malware_printable": "magecart",
+      "reference": null,
+      "reporter": "threatcat_ch",
+      "tags": [
+        "Magecart"
+      ],
+      "threat_type": "cc_skimming",
+      "threat_type_desc": "Indicator that identifies credit card skimming infrastructure (NOT phishing)"
+    },
+    {
+      "confidence_level": 100,
+      "first_seen": "2026-09-03 20:02:40 UTC",
+      "id": "1893986",
+      "ioc": "mournguardian.com",
+      "ioc_type": "domain",
+      "ioc_type_desc": "Domain used for credit card skimming (usually related to Magecart attacks)",
+      "is_compromised": false,
+      "last_seen": "2026-09-04 05:01:26 UTC",
+      "malware": "js.magecart",
+      "malware_alias": null,
+      "malware_malpedia": "https://malpedia.caad.fkie.fraunhofer.de/details/js.magecart",
+      "malware_printable": "magecart",
+      "reference": null,
+      "reporter": "threatcat_ch",
+      "tags": [
+        "Magecart"
+      ],
+      "threat_type": "cc_skimming",
+      "threat_type_desc": "Indicator that identifies credit card skimming infrastructure (NOT phishing)"
+    }
+  ],
+  "query_status": "ok"
+}
