@@ -99,11 +99,6 @@ func printUsageHeader(command, description string) {
 	fmt.Println(description)
 }
 
-// printWarning prints a non-fatal warning
-func printWarning(message string) {
-	fmt.Fprintf(os.Stderr, "Warning: %s\n", message)
-}
-
 // printError prints an error message
 func printError(message string) {
 	fmt.Fprintf(os.Stderr, "Error: %s\n", message)

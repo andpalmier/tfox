@@ -24,7 +24,7 @@ builds:
       - -s -w
       - -X github.com/andpalmier/tfox/cmd.Version={{.Version}}
       - -X github.com/andpalmier/tfox/cmd.Commit={{.ShortCommit}}
-      - -X github.com/andpalmier/tfox/cmd.Date={{.Date}}
+      - -X github.com/andpalmier/tfox/cmd.BuildDate={{.Date}}
 
 archives:
   - id: default
