@@ -1,6 +1,6 @@
 # tfox - ThreatFox CLI client
 
-A command-line client for the [ThreatFox API](https://threatfox.abuse.ch/api/). It looks up indicators of compromise by value, hash, tag or malware family, and shares new ones.
+A command-line client for the [ThreatFox API](https://threatfox.abuse.ch/api/). It looks up indicators of compromise by value, hash, tag or malware family, shares new ones, and downloads the bulk data exports.
 
 > Part of the abuse.ch CLI toolkit, a set of clients for [abuse.ch](https://abuse.ch) services:
 > - [urlhs](https://github.com/andpalmier/urlhs) for URLhaus, the malware URL database
@@ -61,7 +61,7 @@ export ABUSECH_API_KEY="your_api_key_here"
 tfox recent -days 3
 ```
 
-Every command reads the key from `ABUSECH_API_KEY`. When a query fails, tfox prints the explanation ThreatFox itself returned, so you get "The IOC id you have provided is unknown" rather than a bare status code.
+Every command reads the key from `ABUSECH_API_KEY`. When a query fails, tfox prints the explanation ThreatFox returned, such as "The IOC id you have provided is unknown".
 
 ThreatFox expires indicators after six months. Anything older is still visible in the web interface but no longer served by the API.
 
@@ -87,6 +87,7 @@ These go before the command name.
 | `search` | Search by IOC value or file hash |
 | `submit` | Share indicators of compromise |
 | `list` | List malware families, IOC and threat types, or tags |
+| `export` | Download a bulk data export |
 | `version` | Print version information |
 
 ### Recent IOCs
@@ -155,6 +156,25 @@ tfox submit -threat_type botnet_cc -ioc_type domain \
 
 `-ioc` can be repeated to send several indicators in one submission. Take `-threat_type` and `-ioc_type` from `tfox list -types`, and `-malware` from `tfox list -malware`. Confidence runs from 0 to 100 and the API defaults it to 50. Add `-compromised` when the asset belongs to a victim rather than the attacker, and `-anonymous` to submit without attribution.
 
+### Bulk exports
+
+```bash
+# List the export files and what each one holds
+tfox export -h
+
+# IOCs added recently, as CSV
+tfox export -file recent.csv
+
+# Every IOC from the past six months
+tfox -t 5m export -file full.json.zip -out /tmp/threatfox.json.zip
+```
+
+ThreatFox publishes CSV and JSON dumps, a hosts file of payload delivery and botnet C2 domains, a DNS RPZ zone of the same domains, and a Suricata ruleset. abuse.ch rebuilds them every five minutes, so fetching more often gets you the same file.
+
+The timeout covers the whole download, so raise `-t` for the larger files. Without `-out` the file keeps its export name, and tfox will not overwrite a file that already exists.
+
+abuse.ch expects the API key inside the export URL. tfox strips the URL from its error messages so the key does not end up in your logs.
+
 ### Running in a container
 
 ```bash
@@ -163,6 +183,12 @@ docker run --rm -e ABUSECH_API_KEY="your_key" ghcr.io/andpalmier/tfox recent -da
 podman run --rm -e ABUSECH_API_KEY="your_key" ghcr.io/andpalmier/tfox recent -days 3
 
 container run --rm -e ABUSECH_API_KEY="your_key" ghcr.io/andpalmier/tfox recent -days 3
+```
+
+Exports need a mounted volume, otherwise the file disappears with the container:
+
+```bash
+docker run --rm -e ABUSECH_API_KEY="your_key" -v $(pwd):/data ghcr.io/andpalmier/tfox export -file recent.csv -out /data/recent.csv
 ```
 
 ## Environment variables

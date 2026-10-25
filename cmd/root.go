@@ -57,6 +57,8 @@ func Execute() error {
 		return executeSubmit(args[1:])
 	case "list":
 		return executeList(args[1:])
+	case "export":
+		return executeExport(args[1:])
 	default:
 		printError(fmt.Sprintf("unknown subcommand '%s'", args[0]))
 		printRootHelp()

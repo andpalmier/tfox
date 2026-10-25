@@ -61,17 +61,14 @@ homebrew_casks:
     directory: Casks
     # Homebrew quarantines what a cask downloads, and these binaries are neither
     # signed nor notarized, so macOS refuses to run them with "tfox is damaged
-    # and cannot be opened". Formulae did not have this problem, so this is
-    # required by the move to casks rather than optional.
-    #
-    # Clearing the quarantine attribute is a bypass: Apple may withdraw it, and
-    # signing plus notarization is the durable answer. That needs an Apple
-    # Developer account, so it is a separate decision.
+    # and cannot be opened". Clearing the quarantine attribute bypasses
+    # Gatekeeper: Apple may withdraw it, and signing plus notarization is the
+    # durable answer, but that needs an Apple Developer account.
     hooks:
       post:
-        install: |
-          if OS.mac?
-            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/tfox"]
+        install_steps: |
+          on_macos do
+            run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "{{ .StagedPath }}/tfox"]
           end
 
 # One "docker buildx build" across both platforms, pushed as a single
