@@ -15,7 +15,7 @@ import (
 const (
 	defaultAPIURL   = "https://threatfox-api.abuse.ch/api/v1/"
 	defaultTimeout  = 30 * time.Second
-	maxResponseSize = 10 * 1024 * 1024 // prevents OOM from large responses (10MB)
+	maxResponseSize = 64 * 1024 * 1024 // prevents OOM from large responses; get_iocs for 7 days is already over 11MB
 )
 
 // Client interacts with the ThreatFox API
