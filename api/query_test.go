@@ -116,3 +116,12 @@ func TestClient_SearchIOC(t *testing.T) {
 		t.Errorf("Expected 1 result")
 	}
 }
+
+func TestGetRecentIOCsRejectsInvalidDays(t *testing.T) {
+	c := NewClient("test-key")
+	for _, days := range []int{0, -1, 8} {
+		if _, err := c.GetRecentIOCs(context.Background(), days); err == nil {
+			t.Errorf("days=%d should be rejected", days)
+		}
+	}
+}

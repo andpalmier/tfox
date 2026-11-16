@@ -75,18 +75,28 @@ func (c *Client) wait() {
 	c.lastReq = time.Now()
 }
 
-// MakeRequest makes an HTTP POST request to the API with JSON body and returns the response
+// MakeRequest makes an HTTP POST request and returns the response as a string.
+// It is kept for callers that use the exported string API; internal code uses
+// makeRequest to avoid converting the body to a string and back.
 func (c *Client) MakeRequest(ctx context.Context, payload interface{}) (string, error) {
+	body, err := c.makeRequest(ctx, payload)
+	if err != nil {
+		return "", err
+	}
+	return string(body), nil
+}
+
+func (c *Client) makeRequest(ctx context.Context, payload interface{}) ([]byte, error) {
 	c.wait()
 
 	jsonData, err := json.Marshal(payload)
 	if err != nil {
-		return "", fmt.Errorf("marshaling request: %w", err)
+		return nil, fmt.Errorf("marshaling request: %w", err)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL, bytes.NewReader(jsonData))
 	if err != nil {
-		return "", fmt.Errorf("creating request: %w", err)
+		return nil, fmt.Errorf("creating request: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -97,23 +107,23 @@ func (c *Client) MakeRequest(ctx context.Context, payload interface{}) (string, 
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("request failed: %w", err)
+		return nil, fmt.Errorf("request failed: %w", err)
 	}
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("API returned status %s", resp.Status)
+		return nil, fmt.Errorf("API returned status %s", resp.Status)
 	}
 
 	limitedReader := io.LimitReader(resp.Body, maxResponseSize+1)
 	body, err := io.ReadAll(limitedReader)
 	if err != nil {
-		return "", fmt.Errorf("reading response: %w", err)
+		return nil, fmt.Errorf("reading response: %w", err)
 	}
 
 	if len(body) > maxResponseSize {
-		return "", fmt.Errorf("response too large: exceeded %d bytes", maxResponseSize)
+		return nil, fmt.Errorf("response too large: exceeded %d bytes", maxResponseSize)
 	}
 
-	return string(body), nil
+	return body, nil
 }

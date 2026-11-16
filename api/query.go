@@ -7,12 +7,8 @@ import (
 
 // GetRecentIOCs retrieves recent IOCs from ThreatFox
 func (c *Client) GetRecentIOCs(ctx context.Context, days int) ([]IOC, error) {
-	if days > 0 {
-		if err := ValidateDays(days); err != nil {
-			return nil, err
-		}
-	} else {
-		days = 3 // Default
+	if err := ValidateDays(days); err != nil {
+		return nil, err
 	}
 
 	payload := map[string]interface{}{
@@ -20,18 +16,14 @@ func (c *Client) GetRecentIOCs(ctx context.Context, days int) ([]IOC, error) {
 		"days":  days,
 	}
 
-	response, err := c.MakeRequest(ctx, payload)
+	response, err := c.makeRequest(ctx, payload)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving recent IOCs: %w", err)
 	}
 
-	if err := CheckStatus([]byte(response), "get_iocs"); err != nil {
-		return nil, err
-	}
-
-	resp, err := ParseIOCResponse([]byte(response))
+	resp, err := parseResponse(response, "get_iocs", ParseIOCResponse, func(r *IOCResponse) string { return r.QueryStatus })
 	if err != nil {
-		return nil, fmt.Errorf("error parsing response: %w", err)
+		return nil, err
 	}
 
 	return resp.Data, nil
@@ -48,18 +40,14 @@ func (c *Client) GetIOCByID(ctx context.Context, id int) (*SingleIOCResponse, er
 		"id":    id,
 	}
 
-	response, err := c.MakeRequest(ctx, payload)
+	response, err := c.makeRequest(ctx, payload)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving IOC: %w", err)
 	}
 
-	if err := CheckStatus([]byte(response), "ioc"); err != nil {
-		return nil, err
-	}
-
-	resp, err := ParseSingleIOCResponse([]byte(response))
+	resp, err := parseResponse(response, "ioc", ParseSingleIOCResponse, func(r *SingleIOCResponse) string { return r.QueryStatus })
 	if err != nil {
-		return nil, fmt.Errorf("error parsing response: %w", err)
+		return nil, err
 	}
 
 	if resp.ID == "" {
@@ -84,18 +72,14 @@ func (c *Client) SearchIOC(ctx context.Context, searchTerm string, exactMatch bo
 		payload["exact_match"] = true
 	}
 
-	response, err := c.MakeRequest(ctx, payload)
+	response, err := c.makeRequest(ctx, payload)
 	if err != nil {
 		return nil, fmt.Errorf("error searching IOC: %w", err)
 	}
 
-	if err := CheckStatus([]byte(response), "search_ioc"); err != nil {
-		return nil, err
-	}
-
-	resp, err := ParseIOCResponse([]byte(response))
+	resp, err := parseResponse(response, "search_ioc", ParseIOCResponse, func(r *IOCResponse) string { return r.QueryStatus })
 	if err != nil {
-		return nil, fmt.Errorf("error parsing response: %w", err)
+		return nil, err
 	}
 
 	return resp.Data, nil
@@ -112,18 +96,14 @@ func (c *Client) SearchByHash(ctx context.Context, hash string) ([]IOC, error) {
 		"hash":  hash,
 	}
 
-	response, err := c.MakeRequest(ctx, payload)
+	response, err := c.makeRequest(ctx, payload)
 	if err != nil {
 		return nil, fmt.Errorf("error searching by hash: %w", err)
 	}
 
-	if err := CheckStatus([]byte(response), "search_hash"); err != nil {
-		return nil, err
-	}
-
-	resp, err := ParseIOCResponse([]byte(response))
+	resp, err := parseResponse(response, "search_hash", ParseIOCResponse, func(r *IOCResponse) string { return r.QueryStatus })
 	if err != nil {
-		return nil, fmt.Errorf("error parsing response: %w", err)
+		return nil, err
 	}
 
 	return resp.Data, nil
@@ -140,25 +120,21 @@ func (c *Client) QueryTag(ctx context.Context, tag string, limit int) ([]IOC, er
 		"tag":   tag,
 	}
 
-	if limit > 0 {
+	if limit != 0 {
 		if err := ValidateLimit(limit); err != nil {
 			return nil, err
 		}
 		payload["limit"] = limit
 	}
 
-	response, err := c.MakeRequest(ctx, payload)
+	response, err := c.makeRequest(ctx, payload)
 	if err != nil {
 		return nil, fmt.Errorf("error querying tag: %w", err)
 	}
 
-	if err := CheckStatus([]byte(response), "taginfo"); err != nil {
-		return nil, err
-	}
-
-	resp, err := ParseIOCResponse([]byte(response))
+	resp, err := parseResponse(response, "taginfo", ParseIOCResponse, func(r *IOCResponse) string { return r.QueryStatus })
 	if err != nil {
-		return nil, fmt.Errorf("error parsing response: %w", err)
+		return nil, err
 	}
 
 	return resp.Data, nil
@@ -175,25 +151,21 @@ func (c *Client) QueryMalware(ctx context.Context, malware string, limit int) ([
 		"malware": malware,
 	}
 
-	if limit > 0 {
+	if limit != 0 {
 		if err := ValidateLimit(limit); err != nil {
 			return nil, err
 		}
 		payload["limit"] = limit
 	}
 
-	response, err := c.MakeRequest(ctx, payload)
+	response, err := c.makeRequest(ctx, payload)
 	if err != nil {
 		return nil, fmt.Errorf("error querying malware: %w", err)
 	}
 
-	if err := CheckStatus([]byte(response), "malwareinfo"); err != nil {
-		return nil, err
-	}
-
-	resp, err := ParseIOCResponse([]byte(response))
+	resp, err := parseResponse(response, "malwareinfo", ParseIOCResponse, func(r *IOCResponse) string { return r.QueryStatus })
 	if err != nil {
-		return nil, fmt.Errorf("error parsing response: %w", err)
+		return nil, err
 	}
 
 	return resp.Data, nil
@@ -205,18 +177,14 @@ func (c *Client) GetMalwareList(ctx context.Context) (map[string]MalwareDetails,
 		"query": "malware_list",
 	}
 
-	response, err := c.MakeRequest(ctx, payload)
+	response, err := c.makeRequest(ctx, payload)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving malware list: %w", err)
 	}
 
-	if err := CheckStatus([]byte(response), "malware_list"); err != nil {
-		return nil, err
-	}
-
-	resp, err := ParseMalwareListResponse([]byte(response))
+	resp, err := parseResponse(response, "malware_list", ParseMalwareListResponse, func(r *MalwareListResponse) string { return r.QueryStatus })
 	if err != nil {
-		return nil, fmt.Errorf("error parsing response: %w", err)
+		return nil, err
 	}
 
 	return resp.Data, nil
@@ -228,18 +196,14 @@ func (c *Client) GetTypes(ctx context.Context) (map[string]IOCType, error) {
 		"query": "types",
 	}
 
-	response, err := c.MakeRequest(ctx, payload)
+	response, err := c.makeRequest(ctx, payload)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving types: %w", err)
 	}
 
-	if err := CheckStatus([]byte(response), "types"); err != nil {
-		return nil, err
-	}
-
-	resp, err := ParseTypesResponse([]byte(response))
+	resp, err := parseResponse(response, "types", ParseTypesResponse, func(r *TypesResponse) string { return r.QueryStatus })
 	if err != nil {
-		return nil, fmt.Errorf("error parsing response: %w", err)
+		return nil, err
 	}
 
 	return resp.Data, nil
@@ -251,18 +215,14 @@ func (c *Client) GetTagList(ctx context.Context) (map[string]TagInfo, error) {
 		"query": "tag_list",
 	}
 
-	response, err := c.MakeRequest(ctx, payload)
+	response, err := c.makeRequest(ctx, payload)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving tag list: %w", err)
 	}
 
-	if err := CheckStatus([]byte(response), "tag_list"); err != nil {
-		return nil, err
-	}
-
-	resp, err := ParseTagListResponse([]byte(response))
+	resp, err := parseResponse(response, "tag_list", ParseTagListResponse, func(r *TagListResponse) string { return r.QueryStatus })
 	if err != nil {
-		return nil, fmt.Errorf("error parsing response: %w", err)
+		return nil, err
 	}
 
 	return resp.Data, nil
@@ -283,18 +243,14 @@ func (c *Client) GetLabel(ctx context.Context, malware string, platform string) 
 		payload["platform"] = platform
 	}
 
-	response, err := c.MakeRequest(ctx, payload)
+	response, err := c.makeRequest(ctx, payload)
 	if err != nil {
 		return nil, fmt.Errorf("error getting label: %w", err)
 	}
 
-	if err := CheckStatus([]byte(response), "get_label"); err != nil {
-		return nil, err
-	}
-
-	resp, err := ParseLabelResponse([]byte(response))
+	resp, err := parseResponse(response, "get_label", ParseLabelResponse, func(r *LabelResponse) string { return r.QueryStatus })
 	if err != nil {
-		return nil, fmt.Errorf("error parsing response: %w", err)
+		return nil, err
 	}
 
 	return resp.Data, nil

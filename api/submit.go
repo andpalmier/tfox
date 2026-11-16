@@ -11,16 +11,17 @@ import (
 // Valid ThreatType and IOCType values come from the types query, and valid
 // Malware names from the malware_list query.
 type SubmitOptions struct {
-	ThreatType      string
-	IOCType         string
-	Malware         string
-	IOCs            []string
-	ConfidenceLevel int
-	IsCompromised   bool
-	Reference       string
-	Tags            []string
-	Comment         string
-	Anonymous       bool
+	ThreatType         string
+	IOCType            string
+	Malware            string
+	IOCs               []string
+	ConfidenceLevel    int
+	ConfidenceLevelSet bool
+	IsCompromised      bool
+	Reference          string
+	Tags               []string
+	Comment            string
+	Anonymous          bool
 }
 
 // SubmitIOC shares one or more indicators of compromise with ThreatFox.
@@ -40,7 +41,7 @@ func (c *Client) SubmitIOC(ctx context.Context, opts SubmitOptions) (*SubmitResp
 	if opts.Anonymous {
 		payload["anonymous"] = 1
 	}
-	if opts.ConfidenceLevel > 0 {
+	if opts.ConfidenceLevelSet || opts.ConfidenceLevel > 0 {
 		payload["confidence_level"] = opts.ConfidenceLevel
 	}
 	if opts.IsCompromised {
@@ -56,16 +57,16 @@ func (c *Client) SubmitIOC(ctx context.Context, opts SubmitOptions) (*SubmitResp
 		payload["tags"] = opts.Tags
 	}
 
-	response, err := c.MakeRequest(ctx, payload)
+	response, err := c.makeRequest(ctx, payload)
 	if err != nil {
 		return nil, fmt.Errorf("error submitting IOCs: %w", err)
 	}
 
-	if err := CheckStatus([]byte(response), "submit_ioc"); err != nil {
+	resp, err := parseResponse(response, "submit_ioc", ParseSubmitResponse, func(r *SubmitResponse) string { return r.QueryStatus })
+	if err != nil {
 		return nil, err
 	}
-
-	return ParseSubmitResponse([]byte(response))
+	return resp, nil
 }
 
 // validate checks the fields the API requires before spending a request.

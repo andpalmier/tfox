@@ -51,6 +51,28 @@ func CheckStatus(raw []byte, query string) error {
 	return &StatusError{Status: probe.QueryStatus, Detail: detail, Query: query}
 }
 
+// parseResponse parses a successful response once. Status checks use the
+// parsed query_status, so the common path does not decode the same body twice.
+// On malformed or error-shaped bodies it falls back to CheckStatus to recover
+// the API's explanation.
+func parseResponse[T any](raw []byte, query string, parse func([]byte) (T, error), status func(T) string) (T, error) {
+	resp, err := parse(raw)
+	if err != nil {
+		var zero T
+		if statusErr := CheckStatus(raw, query); statusErr != nil {
+			return zero, statusErr
+		}
+		return zero, fmt.Errorf("error parsing response: %w", err)
+	}
+
+	statusValue := status(resp)
+	if statusValue != "" && statusValue != "ok" {
+		var zero T
+		return zero, CheckStatus(raw, query)
+	}
+	return resp, nil
+}
+
 // statusMessages is a fallback for statuses the API reports without an
 // explanation. These were observed against the live API; the published
 // documentation does not enumerate its error statuses.

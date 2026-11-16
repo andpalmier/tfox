@@ -102,3 +102,17 @@ func TestCheckStatusAllowsBareObject(t *testing.T) {
 		t.Errorf("bare object should be accepted, got %v", err)
 	}
 }
+
+// Error-shaped data should still produce the API's explanation even when it
+// cannot be decoded into the endpoint's normal response type.
+func TestParseResponseFallsBackToStatus(t *testing.T) {
+	_, err := parseResponse(
+		[]byte(`{"query_status":"error","data":"bad search"}`),
+		"types",
+		ParseTypesResponse,
+		func(r *TypesResponse) string { return r.QueryStatus },
+	)
+	if err == nil || err.Error() != "bad search" {
+		t.Fatalf("parseResponse error = %v, want API explanation", err)
+	}
+}

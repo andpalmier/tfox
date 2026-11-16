@@ -5,4 +5,6 @@ tfox
 coverage.out
 coverage.html
 tfox.html
-dist
+dist/
+tfox_recent.json
+ch_li_domains.txt

@@ -1,8 +1,8 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
-	"fmt"
 )
 
 // IOCResponse represents a standard ThreatFox API response with IOC data
@@ -143,42 +143,30 @@ type SubmitResponse struct {
 	Data        json.RawMessage `json:"data,omitempty"`
 }
 
-// ParseIOCResponse parses the raw JSON response into an IOCResponse struct
+// ParseIOCResponse parses the raw JSON response into an IOCResponse struct.
+// The API sends data as an array on success and as a string on errors. Decode
+// once, and only decode data when it is an array.
 func ParseIOCResponse(data []byte) (*IOCResponse, error) {
-	// First unmarshal into a map to check the structure of 'data'
-	var raw map[string]interface{}
-	if err := json.Unmarshal(data, &raw); err != nil {
+	var envelope struct {
+		QueryStatus json.RawMessage `json:"query_status"`
+		QueryInfo   *QueryInfo      `json:"query_info,omitempty"`
+		Data        json.RawMessage `json:"data,omitempty"`
+	}
+	if err := json.Unmarshal(data, &envelope); err != nil {
 		return nil, err
 	}
 
-	resp := &IOCResponse{
-		QueryStatus: fmt.Sprintf("%v", raw["query_status"]),
-	}
-
-	if qi, ok := raw["query_info"]; ok {
-		if qiJSON, err := json.Marshal(qi); err == nil {
-			var info QueryInfo
-			if json.Unmarshal(qiJSON, &info) == nil {
-				resp.QueryInfo = &info
-			}
+	resp := &IOCResponse{QueryInfo: envelope.QueryInfo}
+	if len(envelope.QueryStatus) > 0 && string(envelope.QueryStatus) != "null" {
+		if err := json.Unmarshal(envelope.QueryStatus, &resp.QueryStatus); err != nil {
+			resp.QueryStatus = string(envelope.QueryStatus)
 		}
 	}
 
-	// Check if 'data' is an array
-	if dataVal, ok := raw["data"]; ok {
-		switch v := dataVal.(type) {
-		case []interface{}:
-			// Re-marshal and unmarshal into the specific type
-			dataJSON, err := json.Marshal(v)
-			if err != nil {
-				return nil, err
-			}
-			if err := json.Unmarshal(dataJSON, &resp.Data); err != nil {
-				return nil, err
-			}
-		case string:
-			// If it's a string and the status is not 'ok', we treat it as no results
-			// and keep resp.Data empty
+	rawData := bytes.TrimSpace(envelope.Data)
+	if len(rawData) > 0 && rawData[0] == '[' {
+		if err := json.Unmarshal(rawData, &resp.Data); err != nil {
+			return nil, err
 		}
 	}
 

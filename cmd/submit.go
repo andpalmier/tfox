@@ -62,8 +62,10 @@ func executeSubmit(args []string) error {
 	}
 
 	var tagList []string
-	if *tags != "" {
-		tagList = strings.Split(*tags, ",")
+	for _, tag := range strings.Split(*tags, ",") {
+		if tag = strings.TrimSpace(tag); tag != "" {
+			tagList = append(tagList, tag)
+		}
 	}
 
 	opts := api.SubmitOptions{
@@ -77,6 +79,24 @@ func executeSubmit(args []string) error {
 		Tags:            tagList,
 		Comment:         *comment,
 		Anonymous:       *anonymous,
+	}
+	submitCmd.Visit(func(f *flag.Flag) {
+		if f.Name == "confidence" {
+			opts.ConfidenceLevelSet = true
+		}
+	})
+
+	if opts.ThreatType == "" || opts.IOCType == "" || opts.Malware == "" || len(opts.IOCs) == 0 {
+		printError("you must specify -threat_type, -ioc_type, -malware and at least one -ioc")
+		submitCmd.Usage()
+		fmt.Println()
+		return fmt.Errorf("missing required submission flags")
+	}
+	if opts.ConfidenceLevel < 0 || opts.ConfidenceLevel > 100 {
+		printError("confidence must be between 0 and 100")
+		submitCmd.Usage()
+		fmt.Println()
+		return fmt.Errorf("invalid confidence level")
 	}
 
 	client, err := getAPIClient()

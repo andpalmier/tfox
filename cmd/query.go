@@ -3,6 +3,8 @@ package cmd
 import (
 	"flag"
 	"fmt"
+
+	"github.com/andpalmier/tfox/api"
 )
 
 // executeRecent handles the 'recent' subcommand
@@ -20,6 +22,11 @@ func executeRecent(args []string) error {
 	}
 
 	if err := recentCmd.Parse(args); err != nil {
+		return err
+	}
+
+	if err := api.ValidateDays(*days); err != nil {
+		printError(err.Error())
 		return err
 	}
 
@@ -76,6 +83,25 @@ func executeQuery(args []string) error {
 
 	if err := queryCmd.Parse(args); err != nil {
 		return err
+	}
+
+	selected := 0
+	for _, on := range []bool{*id > 0, *tag != "", *malware != "", *label != ""} {
+		if on {
+			selected++
+		}
+	}
+	if selected == 0 {
+		printError("please provide a query parameter (e.g., -id, -tag, -malware)")
+		queryCmd.Usage()
+		fmt.Println()
+		return fmt.Errorf("please provide a query parameter")
+	}
+	if selected > 1 {
+		printError("specify only one query parameter")
+		queryCmd.Usage()
+		fmt.Println()
+		return fmt.Errorf("multiple query parameters")
 	}
 
 	client, err := getAPIClient()
@@ -163,6 +189,25 @@ func executeSearch(args []string) error {
 		return err
 	}
 
+	selected := 0
+	for _, on := range []bool{*ioc != "", *hash != ""} {
+		if on {
+			selected++
+		}
+	}
+	if selected == 0 {
+		printError("please provide -ioc or -hash parameter")
+		searchCmd.Usage()
+		fmt.Println()
+		return fmt.Errorf("please provide -ioc or -hash parameter")
+	}
+	if selected > 1 {
+		printError("specify only one of -ioc or -hash")
+		searchCmd.Usage()
+		fmt.Println()
+		return fmt.Errorf("multiple search parameters")
+	}
+
 	client, err := getAPIClient()
 	if err != nil {
 		printDetailedError(err, "Failed to create API client")
@@ -227,11 +272,23 @@ func executeList(args []string) error {
 		return err
 	}
 
-	if !*malwareList && !*typesList && !*tagList {
+	selected := 0
+	for _, on := range []bool{*malwareList, *typesList, *tagList} {
+		if on {
+			selected++
+		}
+	}
+	if selected == 0 {
 		printError("please specify -malware, -types, or -tags")
 		listCmd.Usage()
 		fmt.Println()
 		return fmt.Errorf("please specify a list type")
+	}
+	if selected > 1 {
+		printError("specify only one of -malware, -types, or -tags")
+		listCmd.Usage()
+		fmt.Println()
+		return fmt.Errorf("multiple list types")
 	}
 
 	client, err := getAPIClient()
